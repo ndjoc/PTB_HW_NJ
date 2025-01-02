@@ -112,12 +112,7 @@ end
 % Save results
 results.responses = responses;
 results.reactionTimes = reactionTimes;
-results.correct = responses == labels; % Correct responses
-results.accuracy = mean(results.correct) * 100; % Accuracy percentage
 save('results.mat', 'results');
-
-% Display results
-disp(['Accuracy: ', num2str(results.accuracy), '%']);
 
 % Close the screen
 Screen('CloseAll');
