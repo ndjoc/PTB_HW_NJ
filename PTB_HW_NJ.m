@@ -110,7 +110,7 @@ for trial = 1:nTrials
                 responded = true;
             end
         end
-        end
+    end
     reactionTimes(trial) = GetSecs - startTime;
     
     % Clear the screen and wait 0.5 seconds before the next trial starts
