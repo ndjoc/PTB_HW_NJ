@@ -1,8 +1,11 @@
-Screen('Preference', 'SkipSyncTests', 1); % Skip sync tests for testing purposes
+% This is the code for the PTB homework 
+% Initial set up: Open a grey window and calculate center of the screen 
+Screen('Preference', 'SkipSyncTests', 1); 
 [win, rect] = Screen('OpenWindow', 0, 128, [0 0 1280 832]);
-[xCenter, yCenter] = RectCenter(rect); % Screen center
+[xCenter, yCenter] = RectCenter(rect);
 
-% Display Instructions
+% Display Instructions 
+% Specify instructions 
 instructions = [
     'Welcome to our experiment.\n\n', ...
     'You will be presented with pictures of faces.\n\n', ...
@@ -11,58 +14,64 @@ instructions = [
     'Press any key to begin.'
 ];
 
-% Set text size and color
-Screen('TextSize', win, 24); % Adjust text size if needed
-textColor = [255, 255, 255]; % White text
+% Text size and color: make color white 
+Screen('TextSize', win, 24); 
+textColor = [255, 255, 255];
 
-% Draw the instructions on the screen
+% Show instructions on the screen 
 DrawFormattedText(win, instructions, 'center', 'center', textColor);
 Screen('Flip', win);
 
-% Wait for a key press to proceed  
+% participant can press a key to continue when done with reading the 
+% instructions 
 KbStrokeWait;
 
-% Define keys for responses
+% Participants are supposed to press a key depending on if its a famous
+% face or a non famous face. 'F' is for famous and 'N' is for non famous
 KbName('UnifyKeyNames');
 famousKey = KbName('F'); % Key for famous faces
 nonFamousKey = KbName('N'); % Key for non-famous faces
 
-% Define image directories
+% Tell matlab where it can find the images 
 famousDir = '/Users/niklasjocher/Library/CloudStorage/OneDrive-Personal/Dokumente/Universität Salzburg/MSc. Psychologie/Semester 1 WS2425/UE Introduction to scientific programming/PTB_HW/famous_faces/';
 nonFamousDir = '/Users/niklasjocher/Library/CloudStorage/OneDrive-Personal/Dokumente/Universität Salzburg/MSc. Psychologie/Semester 1 WS2425/UE Introduction to scientific programming/PTB_HW/non_famous_faces/'; 
 
-% Get list of images
+% Make a list of the famous faces and non famous faces
 famousFiles = dir(fullfile(famousDir, '*.jpg'));
 nonFamousFiles = dir(fullfile(nonFamousDir, '*.jpg'));
 
-% Combine famous and non-famous images
+% Combine famous and non-famous images (1 is for famous faces and 0 for non
+% famous faces) 
 allFiles = [famousFiles; nonFamousFiles];
-labels = [ones(1, numel(famousFiles)), zeros(1, numel(nonFamousFiles))]; % 1 for famous, 0 for non-famous
+labels = [ones(1, numel(famousFiles)), zeros(1, numel(nonFamousFiles))]; 
 
-% Shuffle images and labels
+% Shuffle the order of the images so its random
 rng('shuffle');
 shuffledIdx = randperm(length(allFiles));
 allFiles = allFiles(shuffledIdx);
 labels = labels(shuffledIdx);
 
-% Loop through trials
+% Make a loop for all trials
 nTrials = length(allFiles);
-responses = nan(1, nTrials); % Preallocate for responses
-reactionTimes = nan(1, nTrials); % Preallocate for reaction times
+
+% We want to record reaction times so we'll prepare an array to store them
+% in 
+reactionTimes = nan(1, nTrials); 
+
 
 for trial = 1:nTrials
-    % Draw a cross
-    DrawFormattedText(win, '+', 'center', 'center', 255);
+    % Draw a fixation cross (big plus) that is diplayed for 2 seconds 
+    DrawFormattedText(win, '+', 'center', 'center', 300);
     Screen('Flip', win);
     WaitSecs(2)
 
     % Mask
-    % Define square size and position
-    squareSize = 350; % Size of the square
-    [xCenter, yCenter] = RectCenter(rect); % Center the square in the window
+    % Define square size and position (center of the screen)
+    squareSize = 350; 
+    [xCenter, yCenter] = RectCenter(rect); 
     
     % Generate random noise and jitter
-    noiseMatrix = rand(squareSize, squareSize) * 255; % Random values between 0-255
+    noiseMatrix = rand(squareSize, squareSize) * 300; 
     noiseTexture = Screen('MakeTexture', win, noiseMatrix);
     minTime = 0.1; 
     maxTime = 0.9; 
@@ -87,30 +96,29 @@ for trial = 1:nTrials
     Screen('DrawTexture', win, texture, [], [], 0);
     Screen('Flip', win);
     
-    % Record response
+    % Record response for key presses 
     startTime = GetSecs;
     responded = false;
     while ~responded
         [keyIsDown, ~, keyCode] = KbCheck;
         if keyIsDown
             if keyCode(famousKey)
-                responses(trial) = 1; % Famous
-                responded = true;
+               responses(trial) = 1; % Famous
+               responded = true;
             elseif keyCode(nonFamousKey)
                 responses(trial) = 0; % Non-famous
                 responded = true;
             end
         end
-    end
+        end
     reactionTimes(trial) = GetSecs - startTime;
     
-    % Clear the screen
+    % Clear the screen and wait 0.5 seconds before the next trial starts
     Screen('Flip', win);
-    WaitSecs(0.5); % Short break between trials
+    WaitSecs(0.5);
 end
 
 % Save results
-results.responses = responses;
 results.reactionTimes = reactionTimes;
 save('results.mat', 'results');
 
